@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using IAmHungry.Application.Abstractions;
 using System.Text;
+using System.Xml.Linq;
 
 namespace IAmHungry.Application
 {
@@ -13,29 +14,28 @@ namespace IAmHungry.Application
 
         public HtmlDocument LoadPage(string url)
         {
-            var web = new HtmlWeb();
-            web.OverrideEncoding = Encoding.UTF8;
-            HtmlDocument doc = web.Load(url);
+            var web = new HtmlWeb
+            {
+                OverrideEncoding = Encoding.UTF8
+            };
+            var doc = web.Load(url);
             return doc;
         }
 
-        public List<string> FindNodes(HtmlDocument doc, string node)
+        public List<string> GetNodesInnerText(HtmlDocument doc, string node)
         {
-            List<string> nodes = new List<string>();
+            var nodes = new List<string>();
             try
             {
                 var htmlNodes = doc.DocumentNode.SelectNodes(node);
                 if (htmlNodes == null)
                 {
-                    string message = $"FindNodes Node {node} was not found";
+                    var message = $"GetNodesInnerText Node {node} was not found";
                     nodes.Add(message);
                 }
                 else
                 {
-                    foreach (var htmlNode in htmlNodes)
-                    {
-                        nodes.Add(htmlNode.InnerText);
-                    }
+                    nodes.AddRange(htmlNodes.Select(htmlNode => htmlNode.InnerText));
                 }  
             }
             catch 
@@ -46,18 +46,16 @@ namespace IAmHungry.Application
             return nodes;
         }
 
-        public string FindSingleNode(HtmlDocument doc, string node)
+        public List<HtmlNode> FindNodes(HtmlDocument doc, string node)
         {
-            string innerText = "";
+            return doc.DocumentNode.SelectNodes(node).ToList();
+        }
+
+        public string GetSingleNodeInnerText(HtmlDocument doc, string node)
+        {
+            var innerText = "";
             var htmlNode = doc.DocumentNode.SelectSingleNode(node);
-            if (htmlNode != null)
-            {
-                innerText = htmlNode.InnerText;
-            }
-            else
-            {
-                innerText = node;
-            }
+            innerText = htmlNode != null ? htmlNode.InnerText : node;
             return innerText;
         }
     }

@@ -42,10 +42,8 @@ app.MapGet("/weatherforecast", () =>
 
 app.MapGet("/restaurants", () =>
 {
-    IWebPageParser parser = new WebPageParser();
-    IMenuHandler poledniMenu = new PoledniMenuHandler(parser);
-    var restaurants = poledniMenu.GetRestaurants();
-    return restaurants;
+    var restaurants = new RestaurantService();
+    return restaurants.GetRestaurantList(); ;
 })
 .WithName("IAmHungry")
 .WithOpenApi();

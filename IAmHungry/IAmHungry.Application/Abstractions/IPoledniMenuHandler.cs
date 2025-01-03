@@ -2,7 +2,7 @@
 
 namespace IAmHungry.Application.Abstractions
 {
-    public interface IMenuHandler
+    public interface IPoledniMenuHandler
     {
         string GetRestaurantInfoNode(string restaurantId, string infoPart);
         Restaurant GetRestaurant(string restaurantId);

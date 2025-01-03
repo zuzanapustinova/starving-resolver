@@ -18,36 +18,27 @@ namespace IAmHungry.Application
 
         private bool IsContainedInDescription(string substring)
         {
-            return Meal.Description.ToLower().Contains(substring.ToLower()) ? true : false;
+            return Meal.Description.ToLower().Contains(substring.ToLower());
         }
 
         public bool IsSoup()
         {
-            return (IsContainedInDescription(MealKind.Soup()) ?  true : false);
+            return IsContainedInDescription(MealKind.Soup());
         }
 
         public bool IsVegetarian()
         {
-            foreach (var vege in MealKind.Vege()) 
+            if (MealKind.Vege().Any(vege => IsContainedInDescription(vege)))
             {
-                if (IsContainedInDescription(vege))
-                {
-                    return true;
-                }
+                return true;
             }
             var meatList = MealKind.Meat().Concat(MealKind.Fish());
-            foreach (var meat in meatList)
-            {
-                if (IsContainedInDescription(meat))
-                {
-                    return false;
-                }
-                else
-                {
-                    continue;
-                }
-            }
-            return true;
+            return meatList.All(meat => !IsContainedInDescription(meat));
+        }
+
+        public bool IsEmpty()
+        {
+            return MealKind.NoDataAvailable().Any(line => IsContainedInDescription(line));
         }
     }
 }

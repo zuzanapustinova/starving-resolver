@@ -3,7 +3,7 @@ using IAmHungry.Domain;
 
 namespace IAmHungry.Application
 {
-    public class PoledniMenuHandler : IMenuHandler
+    public class PoledniMenuHandler : IPoledniMenuHandler
     {
         private IWebPageParser _parser;
         private string _poledniMenuUrl;
@@ -21,7 +21,7 @@ namespace IAmHungry.Application
             }
         }
 
-        public PoledniMenuHandler(IWebPageParser parser, string url = "https://www.olomouc.cz/poledni-menu/")
+        public PoledniMenuHandler(IWebPageParser parser, string url)
         {
             _parser = parser;
             _poledniMenuUrl = url;
@@ -30,18 +30,13 @@ namespace IAmHungry.Application
         
         public List<string> GetRestaurantIds()
         {
-            var ids = new List<string>();
             var restaurantsIds = LoadedWebContent.DocumentNode.SelectNodes("//div[contains(concat(' ', normalize-space(@id), ' '), 'restMenu')]");
-            foreach (var id in restaurantsIds)
-            {
-                ids.Add(id.Id);
-            }
-            return ids;
+            return restaurantsIds.Select(id => id.Id).ToList();
         }
 
         public string GetRestaurantInfoNode(string restaurantId, string infoPart)
         {
-            string restaurantInfo = $"//div[@id='{restaurantId}']//div[@class='nazev-restaurace']/{infoPart}";
+            var restaurantInfo = $"//div[@id='{restaurantId}']//div[@class='nazev-restaurace']/{infoPart}";
             return restaurantInfo;
         }
 
@@ -50,8 +45,8 @@ namespace IAmHungry.Application
             var nodeName = GetRestaurantInfoNode(restaurantId, "/h3");
             var nodeAddress = GetRestaurantInfoNode(restaurantId, "/p[@class='restadresa']");
 
-            var restaurantName = _parser.FindSingleNode(LoadedWebContent, nodeName);
-            var restaurantAddress = _parser.FindSingleNode(LoadedWebContent, nodeAddress);
+            var restaurantName = _parser.GetSingleNodeInnerText(LoadedWebContent, nodeName);
+            var restaurantAddress = _parser.GetSingleNodeInnerText(LoadedWebContent, nodeAddress);
 
             if ((restaurantName != null) && (restaurantAddress != null)) 
             {
@@ -65,20 +60,20 @@ namespace IAmHungry.Application
 
         public string GetMenuItemNode(string restaurantId, int trIndex, int tdIndex)
         {
-            string menuItemsNode = $"//div[@id='{restaurantId}']//table//tr[{trIndex}]/td[{tdIndex}]";
+            var menuItemsNode = $"//div[@id='{restaurantId}']//table//tr[{trIndex}]/td[{tdIndex}]";
             return menuItemsNode;
         }
 
         private int GetItemsListCount(string restaurantId)
         {
-            var itemsList = _parser.FindNodes(LoadedWebContent, $"//div[@id='{restaurantId}']//table/tr");
+            var itemsList = _parser.GetNodesInnerText(LoadedWebContent, $"//div[@id='{restaurantId}']//table/tr");
             return (itemsList != null) ? itemsList.Count : 0;
         }
 
         public MenuItem GetMenuItem(string restaurantId, int index)
         {
-            var itemDescription = _parser.FindSingleNode(LoadedWebContent, GetMenuItemNode(restaurantId, index, 2));
-            string itemPrice = _parser.FindSingleNode(LoadedWebContent, GetMenuItemNode(restaurantId, index, 3));
+            var itemDescription = _parser.GetSingleNodeInnerText(LoadedWebContent, GetMenuItemNode(restaurantId, index, 2));
+            var itemPrice = _parser.GetSingleNodeInnerText(LoadedWebContent, GetMenuItemNode(restaurantId, index, 3));
             if (itemDescription == GetMenuItemNode(restaurantId, index, 2))
             {
                 var meal = new Meal("Restaurace nedodala aktuální údaje.");
@@ -89,7 +84,7 @@ namespace IAmHungry.Application
                 var meal = new Meal(itemDescription);
                 if (itemPrice != "")
                 {
-                    int itemAmount = int.Parse(itemPrice.Split("&nbsp;")[0]);
+                    var itemAmount = int.Parse(itemPrice.Split("&nbsp;")[0]);
                     var actualItemPrice = new Price(itemAmount);
                     return new MenuItem(meal, actualItemPrice);
                 }
@@ -104,7 +99,7 @@ namespace IAmHungry.Application
         {
             var menu = new Menu();
             var counter = GetItemsListCount(restaurantId);
-            for (int i = 1; i <= counter; i++)
+            for (var i = 1; i <= counter; i++)
             {
                 var item = GetMenuItem(restaurantId, i);
                 menu.Items.Add(item);
@@ -116,7 +111,7 @@ namespace IAmHungry.Application
         {
             var restaurants = new List<Restaurant>();
             var restaurantsIds = GetRestaurantIds();
-            foreach (string id in restaurantsIds)
+            foreach (var id in restaurantsIds)
             {
                 var restaurant = GetRestaurant(id);
                 restaurants.Add(restaurant);

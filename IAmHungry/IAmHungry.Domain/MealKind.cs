@@ -8,17 +8,23 @@ namespace IAmHungry.Domain
             return new List<string>
             {
                 "anglick",
+                "boloň",
+                "bologn",
                 "dančí",
                 "dršťk",
                 "frankfurtsk",
+                "gulášová",
                 "hovězí",
                 "játr",
                 "jehně",
                 "jelení",
+                "jelítk",
+                "jitrnic",
                 "kačen",
                 "kachní",
                 "kančí",
                 "klobás",
+                "klokaní",
                 "krkovi",
                 "krůtí",
                 "kuře",
@@ -27,6 +33,7 @@ namespace IAmHungry.Domain
                 "pancett",
                 "panenk",
                 "párk",
+                "pečeně",
                 "prosciutto",
                 "řízek",
                 "roštěn",
@@ -74,12 +81,24 @@ namespace IAmHungry.Domain
                 "vege",
                 "tempeh",
                 "sójov",
+                "gulášová z hlívy"
             };
         }
 
         public static string Soup()
         {
             return "polévk";
+        }
+
+        public static List<string> NoDataAvailable()
+        {
+            return new List<string>
+            {
+                "Restaurace nedodala aktuální údaje.",
+                "mimo provoz",
+                "nepodáváme",
+                "zavřeno",
+            };
         }
     }
 }
